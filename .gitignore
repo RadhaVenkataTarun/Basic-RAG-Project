@@ -1,0 +1,15 @@
+# Virtual environment
+ragenv/
+
+# Chroma vector database
+chroma_db/
+
+# Source documents
+documents/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
