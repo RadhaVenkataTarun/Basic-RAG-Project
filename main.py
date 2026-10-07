@@ -2,6 +2,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
+from langchain_ollama import ChatOllama
 
 # Load PDF
 loader = PyPDFLoader("documents/RAG_Practice_Company_Handbook.pdf")
@@ -26,11 +27,13 @@ vector_store = Chroma(
     embedding_function=embeddings
 )
 
-# User question
-question = "How many annual leave days do employees get?"
+# Add documents only when creating the database for the first time
+# vector_store.add_documents(chunks)
+
+# Get question from user
+question = input("Enter your question: ")
 
 # Search for relevant chunks
-
 results = vector_store.similarity_search(question, k=2)
 
 print("\nRelevant information:\n")
@@ -38,16 +41,16 @@ print("\nRelevant information:\n")
 for result in results:
     print(result.page_content)
     print("--------------------")
-from langchain_ollama import ChatOllama
 
+# Load Ollama model
 llm = ChatOllama(
     model="qwen3:4b"
 )
 
+# Create context from retrieved chunks
 context = "\n\n".join([result.page_content for result in results])
 
-question = "How many annual leave days do employees get?"
-
+# Create prompt
 prompt = f"""
 Answer the question using only the information provided in the context.
 
@@ -60,7 +63,9 @@ Question:
 Answer:
 """
 
+# Generate answer
 response = llm.invoke(prompt)
 
+# Print answer
 print("\nRAG ANSWER:")
 print(response.content)
