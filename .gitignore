@@ -1,15 +1,20 @@
-# Virtual environment
-ragenv/
-
-# Chroma vector database
-chroma_db/
-
-# Source documents
-documents/
+# Virtual environments
+.venv/
+venv/
 
 # Python cache
 __pycache__/
 *.pyc
 
-# Environment variables
+# Environment variables and secrets
 .env
+.env.*
+
+# ChromaDB database
+chroma_db/
+
+# VS Code settings
+.vscode/
+
+# Logs
+*.log
