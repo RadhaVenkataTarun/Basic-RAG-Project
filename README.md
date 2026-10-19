@@ -1,209 +1,184 @@
-# Basic RAG Project
 
-A basic Retrieval-Augmented Generation (RAG) application that allows users to retrieve relevant information from PDF documents and generate answers using a local Large Language Model (LLM).
+# Basic RAG Project — LangGraph + FastAPI
 
-The project combines document processing, vector embeddings, similarity search, and a local LLM to provide context-aware answers.
+A Retrieval-Augmented Generation (RAG) application that answers questions from a PDF company handbook using semantic search, Gemini, LangGraph, and FastAPI.
 
----
+## Features
 
-## 🚀 Project Overview
+- **PDF-based question answering:** Answers questions using information retrieved from the company handbook.
+- **Semantic retrieval:** Uses Hugging Face embeddings and ChromaDB to find relevant document chunks.
+- **LLM answer generation:** Uses Google Gemini 3.1 Flash Lite.
+- **Grounding verification:** Checks whether generated answers are supported by the retrieved context.
+- **Retry and fallback:** Retries unsupported answers and provides a fallback response if verification fails.
+- **FastAPI integration:** Exposes the RAG workflow through a REST API.
+- **Source tracking:** Returns the source document and page numbers for retrieved passages.
 
-This project demonstrates how a Retrieval-Augmented Generation (RAG) pipeline works.
+## Tech Stack
 
-Instead of asking the Large Language Model to answer a question only from its pretrained knowledge, the application first searches the provided documents for relevant information.
-
-The retrieved information is then passed as context to the LLM, which generates the final answer based only on the retrieved context.
-
-### RAG Pipeline
-
-```text
-PDF Document
-     ↓
-Document Loader
-     ↓
-Text Splitting
-     ↓
-HuggingFace Embeddings
-     ↓
-Chroma Vector Database
-     ↓
-Similarity Search
-     ↓
-Relevant Context
-     ↓
-Ollama - Qwen3 4B
-     ↓
-RAG Prompt
-     ↓
-Final Answer
-🛠️ Technologies Used
 - Python
 - LangChain
-- HuggingFace Embeddings
+- LangGraph
+- FastAPI
+- Google Gemini API
+- Hugging Face Sentence Transformers
 - ChromaDB
-- Ollama
-- Qwen3 4B
-- PyPDF
-- Virtual Environment
-- Git & GitHub
-🧠 What is RAG?
-Retrieval-Augmented Generation (RAG) is a technique that combines information retrieval with Large Language Models.
-The system first retrieves relevant information from a knowledge source and then provides that information to the LLM as context.
-Traditional LLM
-Question
-   ↓
-LLM
-   ↓
-Answer
+- Uvicorn
 
-RAG
-Question
-   ↓
-Vector Search
-   ↓
-Relevant Documents
-   ↓
-Context
-   ↓
-LLM
-   ↓
-Answer
+## Project Structure
 
-This helps the model generate answers based on the information available in the provided documents.
-📂 Project Structure
+```text
 Basic-RAG-Project/
-│
-├── main.py
-├── .gitignore
-├── README.md
-│
 ├── documents/
-│   └── PDF files
-│
-├── chroma_db/
-│   └── Chroma vector database
-│
-└── ragenv/
-    └── Python virtual environment
+│   └── RAG_Practice_Company_Handbook.pdf
+├── api.py
+├── rag_langgraph.py
+├── check_chroma.py
+├── rebuild_chroma.py
+├── .gitignore
+└── README.md
+```
 
-Note: documents/, chroma_db/, and ragenv/ are excluded from the Git repository using .gitignore.
+## How It Works
 
-⚙️ How the Project Works
-1. Load the PDF
-The application loads the PDF document and extracts its text.
-2. Split the Text
-The extracted text is divided into smaller chunks so that relevant sections can be efficiently retrieved.
-3. Generate Embeddings
-HuggingFace embeddings are used to convert the text chunks into numerical vector representations.
-4. Store Embeddings
-The generated embeddings are stored in a Chroma vector database.
-5. Perform Similarity Search
-When a question is provided, the application searches the Chroma database and retrieves the most relevant document chunks.
-6. Build the Context
-The retrieved document chunks are combined to create the context provided to the language model.
-7. Generate the Answer
-The context and question are passed to the local Qwen3 4B model running through Ollama.
-The prompt instructs the model to answer using the information provided in the retrieved context.
-💻 Installation
-1. Clone the Repository
+1. The PDF handbook is split into text chunks and stored in ChromaDB as embeddings.
+2. The user submits a question through the FastAPI endpoint.
+3. LangGraph retrieves the six most relevant chunks from ChromaDB.
+4. Gemini generates an answer using the retrieved context.
+5. A second Gemini call verifies whether the answer is supported.
+6. If verification fails, LangGraph retries once before returning a fallback response.
+7. The API returns the answer, sources, verification status, generation attempts, and execution time.
+
+## Setup Instructions
+
+### 1. Clone the repository
+
+```bash
 git clone https://github.com/RadhaVenkataTarun/Basic-RAG-Project.git
-
-Navigate into the project:
 cd Basic-RAG-Project
+```
 
-2. Create a Virtual Environment
+### 2. Create a virtual environment
+
+```bash
 python -m venv ragenv
+```
 
-Activate the environment on Windows:
-ragenv\Scripts\activate
+Activate it in Windows PowerShell:
 
-3. Install Required Packages
-Install the required Python libraries:
-pip install langchain
-pip install langchain-community
-pip install langchain-huggingface
-pip install langchain-chroma
-pip install langchain-ollama
-pip install chromadb
-pip install pypdf
-pip install sentence-transformers
+```powershell
+.\ragenv\Scripts\Activate.ps1
+```
 
-🦙 Ollama Setup
-This project uses Ollama to run the language model locally.
-Install Ollama and then download the Qwen3 4B model:
-ollama pull qwen3:4b
+### 3. Install dependencies
 
-Verify that the model is available:
-ollama list
+```bash
+pip install fastapi uvicorn langchain langgraph langchain-huggingface langchain-chroma langchain-google-genai sentence-transformers
+```
 
-You should see:
-qwen3:4b
+### 4. Configure the Gemini API key
 
-Make sure Ollama is running before executing the Python application.
-▶️ Running the Project
-Activate the virtual environment:
-ragenv\Scripts\activate
+Obtain an API key through Google AI Studio.
 
-Run the application:
-python main.py
+Set it in PowerShell:
 
-The application will:
-1. Load the document
-2. Split the document into chunks
-3. Generate embeddings
-4. Store/search the embeddings using ChromaDB
-5. Retrieve relevant information
-6. Send the retrieved context to Qwen3 4B
-7. Generate the final RAG answer
-📝 Example
-Question
-How many annual leave days do employees get?
+```powershell
+$env:GOOGLE_API_KEY="YOUR_GEMINI_API_KEY"
+```
 
-Retrieved Information
-The system searches the PDF document and retrieves the relevant sections containing information about employee leave policies.
-RAG Answer
-18 days
+Replace the placeholder with your own key. Never commit API keys to GitHub.
 
-The answer is generated using the retrieved document context.
-🔍 Key Components
-LangChain
-Used to build and connect the different components of the RAG pipeline.
-HuggingFace Embeddings
-Used to convert text into vector representations for semantic similarity search.
-ChromaDB
-Used as the vector database for storing and retrieving document embeddings.
-Ollama
-Used to run the Large Language Model locally.
-Qwen3 4B
-The local LLM used to generate answers from the retrieved context.
-🔐 Privacy
-The LLM is run locally using Ollama.
-The project does not require sending the document content to a third-party LLM API for generating the answer.
-🎯 Learning Objectives
-This project demonstrates:
-- Understanding of Retrieval-Augmented Generation
-- PDF document processing
-- Text chunking
-- Vector embeddings
-- Vector databases
-- Semantic similarity search
-- Prompt construction
-- Local LLM integration
-- LangChain pipelines
-- Ollama model integration
-🚀 Future Enhancements
-Possible improvements include:
-- Add a Streamlit web interface
-- Allow users to upload multiple PDFs
-- Support conversational chat history
-- Add source citations to generated answers
-- Improve document chunking strategies
-- Add multiple document collections
-- Add configurable similarity-search parameters
-- Deploy the application as a web application
-👨‍💻 Author
-Radha Venkata Tarun Motumarri
-GitHub:
-https://github.com/RadhaVenkataTarun
-📜 License
-This project is intended for educational and demonstration purposes.
+### 5. Prepare ChromaDB
+
+Ensure the PDF is available at:
+
+```text
+documents/RAG_Practice_Company_Handbook.pdf
+```
+
+Build or rebuild the ChromaDB collection using the repository's indexing script:
+
+```powershell
+python rebuild_chroma.py
+```
+
+Run this step when setting up the project for the first time or when rebuilding the document index.
+
+## Running the Application
+
+### Option 1: Interactive LangGraph execution
+
+```powershell
+python rag_langgraph.py
+```
+
+Enter a question when prompted.
+
+### Option 2: Run the FastAPI server
+
+```powershell
+uvicorn api:app --reload
+```
+
+Open the interactive API documentation:
+
+http://127.0.0.1:8000/docs
+
+## API Usage
+
+### Endpoint
+
+```text
+POST /ask
+```
+
+### Request
+
+```json
+{
+  "question": "What is the annual learning budget?"
+}
+```
+
+### Example response
+
+```json
+{
+  "question": "What is the annual learning budget?",
+  "answer": "Eligible employees can use up to INR 20,000 per year for approved learning. [Page 2]",
+  "sources": [
+    "RAG_Practice_Company_Handbook.pdf - Page 2"
+  ],
+  "verification": "SUPPORTED",
+  "generation_attempts": 1,
+  "execution_time_seconds": 2.5
+}
+```
+
+The response values above are illustrative; actual answers and timings depend on the question and execution.
+
+## Utility Scripts
+
+- `check_chroma.py` — Inspects the ChromaDB collection and stored chunks.
+- `rebuild_chroma.py` — Rebuilds the document index from the PDF.
+- `rag_langgraph.py` — Contains the retrieval, generation, verification, retry, and fallback workflow.
+- `api.py` — Exposes the compiled LangGraph workflow through FastAPI.
+
+## Important Notes
+
+- The Gemini API key must be configured before running the application.
+- ChromaDB is stored locally and excluded from Git.
+- The PDF must be available locally when building the index.
+- The first run may take longer because the embedding model needs to load.
+- Verification is an automated check and does not guarantee that every answer is factually correct.
+- Do not commit secrets, virtual environments, or generated database files.
+
+## Future Improvements
+
+- Add a web-based chat interface.
+- Improve retrieval using hybrid search and reranking.
+- Add automated evaluation for retrieval quality and answer correctness.
+- Add conversation history and deployment support.
+
+## License
+
+Add a license if you intend to distribute this project publicly.
